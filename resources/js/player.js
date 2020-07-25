@@ -22,6 +22,8 @@ class Player {
 
     drop() {
         this.y = this.yShadow;
+        this.arena.merge(this);
+        this.spawn();
     }
 
     get rows() {
@@ -65,8 +67,7 @@ class Player {
         this.fallCounter += this.sketch.deltaTime;
         if (this.fallCounter >= this.fallRate) {
             if (!this.move(0, 1)) {
-                this.arena.merge(this);
-                this.spawn();
+                this.drop();
             }
             this.fallCounter -= this.fallRate;
         }
@@ -160,8 +161,6 @@ class Player {
         }
         if (this.sketch.keyCode === 32) {
             this.drop();
-            this.arena.merge(this);
-            this.spawn();
         }
     }
 }
