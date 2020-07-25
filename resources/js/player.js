@@ -46,13 +46,15 @@ class Player {
 
         this.fallCounter += this.sketch.deltaTime;
         if (this.fallCounter >= this.fallRate) {
-            this.move(0, 1);
+            if (!this.move(0, 1)) {
+                this.arena.merge(this);
+                this.reset();
+            }
             this.fallCounter -= this.fallRate;
         }
     }
 
     draw() {
-        this.update();
         this.graphics.fill(this.shape.color);
         this.shape.grid.forEach((row, rowIndex) => {
             row.forEach((occupied, colIndex) => {
@@ -75,6 +77,10 @@ class Player {
         return false;
     }
 
+    collidable(x, y) {
+        return this.shape.grid[y][x];
+    }
+
     move(x, y) {
         const pastX = this.x;
         const pastY = this.y;
@@ -83,7 +89,9 @@ class Player {
         if (this.collides()) {
             this.x = pastX;
             this.y = pastY;
+            return false;
         }
+        return true;
     }
 
     rotate(cwAmount) {
@@ -92,5 +100,21 @@ class Player {
         if (this.collides()) {
             this.shape.rotate(-cwAmount);
         }
+    }
+
+    mergeToArena() {
+        this.arena.merge(this);
+    }
+
+    get rows() {
+        return this.shape.grid.length;
+    }
+
+    get cols() {
+        return this.shape.grid[0].length;
+    }
+
+    get color() {
+        return this.shape.color;
     }
 }

@@ -38,4 +38,14 @@ class Arena {
             }
         }
     }
+
+    merge(player) {
+        for (let y = 0; y < player.rows; y++) {
+            for (let x = 0; x < player.cols; x++) {
+                if (player.collidable(x, y)) {
+                    this.grid[y + player.y][x + player.x] = new Block(player.color, true);
+                }
+            }
+        }
+    }
 }

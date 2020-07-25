@@ -9,6 +9,8 @@ class Tetris {
     }
 
     draw() {
+        this.player.update();
+
         this.arena.draw();
         this.player.draw();
         
