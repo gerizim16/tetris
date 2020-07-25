@@ -7,7 +7,7 @@ class Player {
         this.fallCounter = 0;
         this.horizontalRate = 120;
         this.horizontalMoveCounter = 0;
-        this.verticalRate = 120;
+        this.verticalRate = fallRate * 0.1;
         this.verticalMoveCounter = 0;
         this.shapeNameGenerator = randomShapeName();
         this.spawn();
@@ -136,7 +136,9 @@ class Player {
     }
 
     rotate(cwAmount) {
-        // TODO: pushback when possible
+        // TODO: pushback
+        cwAmount += 4;
+        cwAmount %= 4;
         this.shape.rotate(cwAmount);
         if (this.collides()) {
             this.shape.rotate(-cwAmount);
