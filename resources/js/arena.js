@@ -25,7 +25,7 @@ class Arena {
     }
 
     static randomDarkColor() {
-        return Math.floor(Math.random() * 60);
+        return Math.floor(Math.random() * 30 + 30);
     }
 
     collidable(x, y) {
