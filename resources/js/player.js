@@ -38,7 +38,10 @@ class Player {
         if (this.sketch.keyIsDown(83) || this.sketch.keyIsDown(40)) {
             this.verticalMoveCounter += this.sketch.deltaTime;
             if (this.verticalMoveCounter >= this.verticalRate) {
-                this.move(0, 1);
+                if (!this.move(0, 1)) {
+                    this.arena.merge(this);
+                    this.reset();
+                }
                 this.verticalMoveCounter -= this.verticalRate;
                 this.fallCounter = 0;
             }
