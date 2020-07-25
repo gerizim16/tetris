@@ -23,6 +23,13 @@ class Arena {
         }
     }
 
+    collidable(x, y) {
+        if (x < 0 || x >= this.cols || y < 0 || y >= this.rows) {
+            return true;
+        }
+        return this.grid[y][x].collidable;
+    }
+
     draw() {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {

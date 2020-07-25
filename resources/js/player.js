@@ -5,9 +5,9 @@ class Player {
         this.arena = arena;
         this.fallRate = fallRate;
         this.fallCounter = 0;
-        this.horizontalRate = 100;
+        this.horizontalRate = 120;
         this.horizontalMoveCounter = 0;
-        this.verticalRate = 100;
+        this.verticalRate = 120;
         this.verticalMoveCounter = 0;
         this.reset();
     }
@@ -16,7 +16,7 @@ class Player {
         // TODO: fix spawn location and create shape class
         this.x = 3;
         this.y = 0;
-        this.shape = createShape(getRandomShape());
+        this.shape = new Shape();
     }
 
     update() {
@@ -64,7 +64,14 @@ class Player {
     }
 
     collides() {
-        // TODO
+        for (let y = 0; y < this.shape.rows; y++) {
+            for (let x = 0; x < this.shape.cols; x++) {
+                const occupied = this.shape.collidable(x, y);
+                if (occupied && this.arena.collidable(x + this.x, y + this.y)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -80,22 +87,10 @@ class Player {
     }
 
     rotate(cwAmount) {
-        // TODO move rotate to shape class
-        cwAmount += 4;
-        cwAmount %= 4;
-        switch (cwAmount) {
-            case 1:
-                transpose(this.shape.grid);
-                mirrorOnY(this.shape.grid);
-                break;
-            case 2:
-                transpose(this.shape.grid);
-                mirrorOnX(this.shape.grid);
-            case 3:
-                transpose(this.shape.grid);
-                mirrorOnX(this.shape.grid);
-            default:
-                break;
+        // TODO: pushback when possible
+        this.shape.rotate(cwAmount);
+        if (this.collides()) {
+            this.shape.rotate(-cwAmount);
         }
     }
 }
