@@ -1,8 +1,4 @@
 function tetrisGame(sketch) {
-    sketch.colors = {};
-    for (const color in colors) {
-        sketch.colors[color] = colors[color];
-    }
     sketch.colors = {
         BLACK: sketch.color(colors.BLACK),
         BLUE: sketch.color(colors.BLUE),
@@ -30,4 +26,4 @@ function tetrisGame(sketch) {
     };
 }
 
-let p5Sketch = new p5(tetrisGame)
+let p5Sketch = new p5(tetrisGame, 'gameContainer');

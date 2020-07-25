@@ -36,4 +36,5 @@ const colors = {
     RED: [255, 50, 19],
     MAGENTA: [255, 0, 255],
     CYAN: [0, 255, 255],
+    SHADOW: [255, 150],
 }
