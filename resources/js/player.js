@@ -14,7 +14,7 @@ class Player {
     }
 
     spawn() {
-        // TODO: fix spawn location and create shape class
+        // TODO: fix spawn location
         this.x = 3;
         this.y = 0;
         this.shape = new Shape(this.shapeNameGenerator.next().value);

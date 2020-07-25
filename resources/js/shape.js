@@ -28,52 +28,53 @@ class Shape {
         switch (shapeName) {
             case shapeNames.L:
                 this.grid = [
-                    [false, false, false],
+                    [false, false, true],
                     [true, true, true],
-                    [true, false, false],
+                    [false, false, false],
                 ];
                 this.color = colors.ORANGE;
                 break;
             case shapeNames.J:
                 this.grid = [
-                    [false, false, false],
+                    [true, false, false],
                     [true, true, true],
-                    [false, false, true],
+                    [false, false, false],
                 ];
                 this.color = colors.BLUE;
                 break;
 
             case shapeNames.T:
                 this.grid = [
-                    [false, false, false],
-                    [true, true, true],
                     [false, true, false],
+                    [true, true, true],
+                    [false, false, false],
                 ];
                 this.color = colors.MAGENTA;
                 break;
 
             case shapeNames.S:
                 this.grid = [
-                    [false, false, false],
                     [false, true, true],
                     [true, true, false],
+                    [false, false, false],
                 ];
                 this.color = colors.GREEN;
                 break;
 
             case shapeNames.Z:
                 this.grid = [
-                    [false, false, false],
                     [true, true, false],
                     [false, true, true],
+                    [false, false, false],
                 ];
                 this.color = colors.RED;
                 break;
 
             case shapeNames.O:
                 this.grid = [
-                    [true, true],
-                    [true, true],
+                    [false, true, true],
+                    [false, true, true],
+                    [false, false, false],
                 ];
                 this.color = colors.YELLOW;
                 break;
@@ -81,8 +82,8 @@ class Shape {
             case shapeNames.I:
                 this.grid = [
                     [false, false, false, false],
-                    [false, false, false, false],
                     [true, true, true, true],
+                    [false, false, false, false],
                     [false, false, false, false],
                 ];
                 this.color = colors.CYAN;
