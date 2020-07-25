@@ -8,6 +8,17 @@ const shapeNames = Object.freeze({
     I: Symbol("i"),
 });
 
+function* randomShapeName() {
+    let bag = [];
+    while (true) {
+        if (bag.length === 0) {
+            bag = Object.values(shapeNames);
+            bag = shuffle(bag);
+        }
+        yield bag.pop();
+    }
+}
+
 class Shape {
     constructor(shapeName) {
         if (shapeName == null) {
@@ -78,7 +89,7 @@ class Shape {
                 break;
 
             default:
-                console.log('create shape failed');
+                throw ('Unable to construct shape: ' + shapeName);
         }
     }
 

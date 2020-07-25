@@ -9,6 +9,7 @@ class Player {
         this.horizontalMoveCounter = 0;
         this.verticalRate = 120;
         this.verticalMoveCounter = 0;
+        this.shapeNameGenerator = randomShapeName();
         this.spawn();
     }
 
@@ -16,7 +17,7 @@ class Player {
         // TODO: fix spawn location and create shape class
         this.x = 3;
         this.y = 0;
-        this.shape = new Shape();
+        this.shape = new Shape(this.shapeNameGenerator.next().value);
         this.updateShadow();
     }
 
