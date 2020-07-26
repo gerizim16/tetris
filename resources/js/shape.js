@@ -22,6 +22,7 @@ function* randomShapeName() {
 // TODO: orientation status, reset
 class Shape {
     constructor(shapeName) {
+        this.orientation = 0;
         if (shapeName == null) {
             shapeName = Shape.getRandomShapeName();
         }
@@ -100,8 +101,11 @@ class Shape {
     }
 
     rotate(cwAmount) {
+        cwAmount %= 4;
         cwAmount += 4;
         cwAmount %= 4;
+        this.orientation += cwAmount;
+        this.orientation %= 4;
         switch (cwAmount) {
             case 1:
                 transpose(this.grid);
@@ -116,6 +120,10 @@ class Shape {
             default:
                 break;
         }
+    }
+
+    resetRotation() {
+        this.rotate(-this.orientation);
     }
 
     drawGrid(graphics, blockSize, xOffset = 0, yOffset = 0, colorOverride = null) {

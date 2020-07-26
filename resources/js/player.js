@@ -79,6 +79,7 @@ class Player {
             if (this.shape == null) {
                 this.spawn();
             }
+            this.shapeHold.resetRotation();
             this.resetStatus();
             this.held = true;
         }
@@ -186,6 +187,7 @@ class Player {
 
     rotate(cwAmount) {
         // TODO: pushback
+        cwAmount %= 4;
         cwAmount += 4;
         cwAmount %= 4;
         this.shape.rotate(cwAmount);
