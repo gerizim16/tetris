@@ -1,8 +1,9 @@
 class Arena {
-    constructor(cols, rows, sketch) {
+    constructor(cols, rows, sketch, tetris) {
         this.grid = createMatrix(cols, rows);
         this.gridBackground = createMatrix(cols, rows);
         this.sketch = sketch;
+        this.tetris = tetris;
         this.blockSize = sketch.width / cols;
         this.reset();
         for (let y = 0; y < this.rows; y++) {
@@ -70,6 +71,7 @@ class Arena {
             rowsToAdd++;
         }
         this.grid.unshift(...createMatrix(cols, rowsToAdd));
+        this.tetris.cleared(rowsToAdd);
         return rowsToAdd;
     }
 }

@@ -20,10 +20,6 @@ function tetrisGame(sketch) {
     sketch.keyPressed = function () {
         sketch.tetris.keyPressed();
     };
-
-    sketch.keyReleased = function () {
-        sketch.tetris.keyReleased();
-    };
 }
 
 let p5Sketch = new p5(tetrisGame, 'gameContainer');
