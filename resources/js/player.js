@@ -102,13 +102,13 @@ class Player {
     }
 
     update() {
-        if (this.sketch.keyIsDown(65) || this.sketch.keyIsDown(37)) {
+        if (this.sketch.keyIsDown(37)) {
             this.horizontalMoveCounter += this.sketch.deltaTime;
             if (this.horizontalMoveCounter >= this.horizontalRate) {
                 this.move(-1, 0);
                 this.horizontalMoveCounter -= this.horizontalRate;
             }
-        } else if (this.sketch.keyIsDown(68) || this.sketch.keyIsDown(39)) {
+        } else if (this.sketch.keyIsDown(39)) {
             this.horizontalMoveCounter += this.sketch.deltaTime;
             if (this.horizontalMoveCounter >= this.horizontalRate) {
                 this.move(1, 0);
@@ -117,7 +117,7 @@ class Player {
         } else {
             this.horizontalMoveCounter = 0;
         }
-        if (this.sketch.keyIsDown(83) || this.sketch.keyIsDown(40)) {
+        if (this.sketch.keyIsDown(40)) {
             this.verticalMoveCounter += this.sketch.deltaTime;
             if (this.verticalMoveCounter >= this.verticalRate) {
                 this.softDrop();
@@ -209,12 +209,12 @@ class Player {
     }
 
     keyPressed() {
-        if (this.sketch.keyCode === 65 || this.sketch.keyCode === 37) {
+        if (this.sketch.keyCode === 37) {
             this.move(-1, 0);
-        } else if (this.sketch.keyCode === 68 || this.sketch.keyCode === 39) {
+        } else if (this.sketch.keyCode === 39) {
             this.move(1, 0);
         }
-        if (this.sketch.keyCode === 83 || this.sketch.keyCode === 40) {
+        if (this.sketch.keyCode === 40) {
             this.softDrop();
         }
         if (this.sketch.keyCode === 88 || this.sketch.keyCode === 38) {
