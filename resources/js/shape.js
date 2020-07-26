@@ -22,6 +22,7 @@ function* randomShapeName() {
 // TODO: orientation status, reset
 class Shape {
     constructor(shapeName) {
+        this.shapeName = shapeName;
         this.orientation = 0;
         if (shapeName == null) {
             shapeName = Shape.getRandomShapeName();
@@ -101,6 +102,7 @@ class Shape {
     }
 
     rotate(cwAmount) {
+        if (this.shapeName === shapeNames.O) return;
         cwAmount %= 4;
         cwAmount += 4;
         cwAmount %= 4;
