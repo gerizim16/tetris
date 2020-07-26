@@ -19,6 +19,7 @@ function* randomShapeName() {
     }
 }
 
+// TODO: orientation status, reset
 class Shape {
     constructor(shapeName) {
         if (shapeName == null) {

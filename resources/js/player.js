@@ -9,6 +9,8 @@ class Player {
         this.horizontalMoveCounter = 0;
         this.verticalRate = fallRate * 0.1;
         this.verticalMoveCounter = 0;
+        this.dropRate = 500;
+        this.dropCounter = 0;
         this.shapeNameGenerator = randomShapeName();
         this.next = [];
         for (let i = 0; i < 6; i++) {
@@ -21,33 +23,35 @@ class Player {
         return new Shape(this.shapeNameGenerator.next().value);
     }
 
-    resetCoords() {
+    resetStatus() {
         this.x = 3;
         this.y = 0;
+        this.held = false;
+        this.updateShadow();
     }
 
     spawn() {
-        this.resetCoords();
-        this.held = false;
         this.shape = this.next.shift();
         this.next.push(this.createShape());
-        this.updateShadow();
+        this.resetStatus();
+    }
+
+    place() {
+        this.arena.merge(this);
+        this.spawn();
     }
 
     drop() {
         this.y = this.yShadow;
-        this.arena.merge(this);
-        this.spawn();
     }
 
     hold() {
         if (!this.held) {
             [this.shapeHold, this.shape] = [this.shape, this.shapeHold];
-            this.resetCoords();
             if (this.shape == null) {
                 this.spawn();
             }
-            this.updateShadow();
+            this.resetStatus();
             this.held = true;
         }
     }
@@ -93,7 +97,7 @@ class Player {
         this.fallCounter += this.sketch.deltaTime;
         if (this.fallCounter >= this.fallRate) {
             if (!this.move(0, 1)) {
-                this.drop();
+                this.place();
             }
             this.fallCounter -= this.fallRate;
         }
@@ -175,6 +179,7 @@ class Player {
         }
         if (this.sketch.keyCode === 32) {
             this.drop();
+            this.place();
         }
         if (this.sketch.keyCode === 67) {
             this.hold();
