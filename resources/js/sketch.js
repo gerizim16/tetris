@@ -9,7 +9,7 @@ function tetrisGame(sketch) {
     }
 
     sketch.setup = function () {
-        sketch.createCanvas(800, 800);
+        sketch.createCanvas(700, 800);
         sketch.tetris = new Tetris(0, 0, sketch);
     };
 

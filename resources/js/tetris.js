@@ -15,8 +15,8 @@ class Tetris {
         this.drawTitle(this.sketch.width / 2, 20);
         const temp = (this.sketch.width - this.playArea.width) / 2;
         this.drawNext(temp + this.playArea.width + 50, 140);
-        this.drawHold(temp - 160, 140);
-        this.drawScore(temp - 160, 340);
+        this.drawHold(temp - 120, 140);
+        this.drawScore(temp - 120, 340);
         this.drawPlayArea(temp, 80);
     }
 
