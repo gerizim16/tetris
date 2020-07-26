@@ -10,14 +10,27 @@ class Player {
         this.verticalRate = fallRate * 0.1;
         this.verticalMoveCounter = 0;
         this.shapeNameGenerator = randomShapeName();
+        this.next = [];
+        for (let i = 0; i < 6; i++) {
+            this.next.push(this.createShape());
+        }
         this.spawn();
     }
 
-    spawn() {
-        // TODO: fix spawn location
+    createShape() {
+        return new Shape(this.shapeNameGenerator.next().value);
+    }
+
+    resetCoords() {
         this.x = 3;
         this.y = 0;
-        this.shape = new Shape(this.shapeNameGenerator.next().value);
+    }
+
+    spawn() {
+        this.resetCoords();
+        this.held = false;
+        this.shape = this.next.shift();
+        this.next.push(this.createShape());
         this.updateShadow();
     }
 
@@ -25,6 +38,18 @@ class Player {
         this.y = this.yShadow;
         this.arena.merge(this);
         this.spawn();
+    }
+
+    hold() {
+        if (!this.held) {
+            [this.shapeHold, this.shape] = [this.shape, this.shapeHold];
+            this.resetCoords();
+            if (this.shape == null) {
+                this.spawn();
+            }
+            this.updateShadow();
+            this.held = true;
+        }
     }
 
     get rows() {
@@ -82,25 +107,11 @@ class Player {
     }
 
     draw() {
-        this.graphics.fill(this.shape.color);
-        this.shape.grid.forEach((row, rowIndex) => {
-            row.forEach((occupied, colIndex) => {
-                if (occupied) {
-                    this.graphics.square((this.x + colIndex) * this.arena.blockSize, (this.y + rowIndex) * this.arena.blockSize, this.arena.blockSize);
-                }
-            });
-        });
+        this.shape.drawGrid(this.graphics, this.arena.blockSize, this.x, this.y);
     }
 
     drawShadow() {
-        this.graphics.fill(colors.SHADOW);
-        this.shape.grid.forEach((row, rowIndex) => {
-            row.forEach((occupied, colIndex) => {
-                if (occupied) {
-                    this.graphics.square((this.x + colIndex) * this.arena.blockSize, (this.yShadow + rowIndex) * this.arena.blockSize, this.arena.blockSize);
-                }
-            });
-        });
+        this.shape.drawGrid(this.graphics, this.arena.blockSize, this.x, this.yShadow, colors.SHADOW);
     }
 
     collides() {
@@ -164,6 +175,9 @@ class Player {
         }
         if (this.sketch.keyCode === 32) {
             this.drop();
+        }
+        if (this.sketch.keyCode === 67) {
+            this.hold();
         }
     }
 }

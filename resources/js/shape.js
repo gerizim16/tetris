@@ -117,6 +117,28 @@ class Shape {
         }
     }
 
+    drawGrid(graphics, blockSize, xOffset = 0, yOffset = 0, colorOverride = null) {
+        graphics.fill(colorOverride ?? this.color);
+        this.grid.forEach((row, rowIndex) => {
+            row.forEach((occupied, colIndex) => {
+                if (occupied) {
+                    graphics.square((xOffset + colIndex) * blockSize, (yOffset + rowIndex) * blockSize, blockSize);
+                }
+            });
+        });
+    }
+
+    draw(graphics, blockSize, xOffset = 0, yOffset = 0, colorOverride = null) {
+        graphics.fill(colorOverride ?? this.color);
+        this.grid.forEach((row, rowIndex) => {
+            row.forEach((occupied, colIndex) => {
+                if (occupied) {
+                    graphics.square(colIndex * blockSize + xOffset, rowIndex * blockSize + yOffset, blockSize);
+                }
+            });
+        });
+    }
+
     get rows() {
         return this.grid.length;
     }
