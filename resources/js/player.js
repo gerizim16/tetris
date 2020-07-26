@@ -46,11 +46,15 @@ class Player {
     hardDrop() {
         this.score += (this.yShadow - this.y) * 2;
         this.y = this.yShadow;
+        this.place();
     }
 
     softDrop() {
         const moved = this.move(0, 1);
-        if (moved) this.score++;
+        if (moved) {
+            this.score++;
+            this.fallCounter = 0;
+        }
         return moved;
     }
 
@@ -116,9 +120,7 @@ class Player {
         if (this.sketch.keyIsDown(83) || this.sketch.keyIsDown(40)) {
             this.verticalMoveCounter += this.sketch.deltaTime;
             if (this.verticalMoveCounter >= this.verticalRate) {
-                if (this.softDrop()) {
-                    this.fallCounter = 0;
-                }
+                this.softDrop();
                 this.verticalMoveCounter -= this.verticalRate;
             }
         }
@@ -191,12 +193,13 @@ class Player {
         cwAmount += 4;
         cwAmount %= 4;
         this.shape.rotate(cwAmount);
+        let success = true;
         if (this.collides()) {
             this.shape.rotate(-cwAmount);
+            success = false;
         }
-        if (cwAmount != 0) {
-            this.updateShadow();
-        }
+        this.updateShadow();
+        return success;
     }
 
     keyPressed() {
@@ -209,13 +212,16 @@ class Player {
             this.softDrop();
         }
         if (this.sketch.keyCode === 88 || this.sketch.keyCode === 38) {
-            this.rotate(1);
+            if (this.rotate(1)) {
+                this.dropCounter = 0;
+            }
         } else if (this.sketch.keyCode === 90 || this.sketch.keyCode === 17) {
-            this.rotate(-1);
+            if (this.rotate(-1)) {
+                this.dropCounter = 0;
+            }
         }
         if (this.sketch.keyCode === 32) {
             this.hardDrop();
-            this.place();
         }
         if (this.sketch.keyCode === 67) {
             this.hold();
