@@ -142,8 +142,10 @@ class Player {
 
     updateShadow() {
         const y = this.y;
-        while (this.move(0, 1)) { }
-        this.yShadow = this.y;
+        while (!this.collides()) {
+            this.y++;
+        }
+        this.yShadow = this.y - 1;
         this.y = y;
     }
 
@@ -158,8 +160,7 @@ class Player {
     collides() {
         for (let y = 0; y < this.shape.rows; y++) {
             for (let x = 0; x < this.shape.cols; x++) {
-                const occupied = this.shape.collidable(x, y);
-                if (occupied && this.arena.collidable(x + this.x, y + this.y)) {
+                if (this.shape.collidable(x, y) && this.arena.collidable(x + this.x, y + this.y)) {
                     return true;
                 }
             }
@@ -172,16 +173,20 @@ class Player {
     }
 
     move(x, y) {
-        const pastX = this.x;
-        const pastY = this.y;
-        this.x += x;
-        this.y += y;
-        if (this.collides()) {
-            this.x = pastX;
-            this.y = pastY;
-            return false;
+        if (y != 0) {
+            if (this.y + y <= this.yShadow) {
+                this.y += y;
+            } else {
+                return false;
+            }
         }
         if (x != 0) {
+            const pastX = this.x;
+            this.x += x;
+            if (this.collides()) {
+                this.x = pastX;
+                return false;
+            }
             this.updateShadow();
         }
         return true;
