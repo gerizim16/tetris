@@ -16,6 +16,7 @@ class Tetris {
         const temp = (this.sketch.width - this.playArea.width) / 2;
         this.drawNext(temp + this.playArea.width + 50, 140);
         this.drawHold(temp - 160, 140);
+        this.drawScore(temp - 160, 340);
         this.drawPlayArea(temp, 80);
     }
 
@@ -45,6 +46,14 @@ class Tetris {
         this.player.drawShadow();
         this.player.draw();
         this.sketch.image(this.playArea, x, y);
+    }
+
+    drawScore(x, y) {
+        this.sketch.fill(0);
+        this.sketch.textAlign(this.sketch.LEFT, this.sketch.TOP);
+        this.sketch.textSize(30);
+        this.sketch.text('score', x, y);
+        this.sketch.text(this.player.score, x, y + 50);
     }
 
     drawTitle(x, y) {

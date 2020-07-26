@@ -52,7 +52,7 @@ class Arena {
                 }
             }
         }
-        this.checkClearLines(player.y, player.y + player.rows);
+        player.cleared(this.checkClearLines(player.y, player.y + player.rows));
     }
 
     checkClearLines(min, max) {
@@ -70,5 +70,6 @@ class Arena {
             rowsToAdd++;
         }
         this.grid.unshift(...createMatrix(cols, rowsToAdd));
+        return rowsToAdd;
     }
 }

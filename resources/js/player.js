@@ -11,6 +11,7 @@ class Player {
         this.verticalMoveCounter = 0;
         this.dropRate = 500;
         this.dropCounter = 0;
+        this.score = 0;
         this.shapeNameGenerator = randomShapeName();
         this.next = [];
         for (let i = 0; i < 6; i++) {
@@ -42,8 +43,34 @@ class Player {
         this.spawn();
     }
 
-    drop() {
+    hardDrop() {
+        this.score += (this.yShadow - this.y) * 2;
         this.y = this.yShadow;
+    }
+
+    softDrop() {
+        const moved = this.move(0, 1);
+        if (moved) this.score++;
+        return moved;
+    }
+
+    cleared(lines) {
+        switch (lines) {
+            case 1:
+                this.score += 100;
+                break;
+            case 2:
+                this.score += 300;
+                break;
+            case 3:
+                this.score += 500;
+                break;
+            case 4:
+                this.score += 800;
+                break;
+            default:
+                break;
+        }
     }
 
     hold() {
@@ -88,7 +115,7 @@ class Player {
         if (this.sketch.keyIsDown(83) || this.sketch.keyIsDown(40)) {
             this.verticalMoveCounter += this.sketch.deltaTime;
             if (this.verticalMoveCounter >= this.verticalRate) {
-                if (this.move(0, 1)) {
+                if (this.softDrop()) {
                     this.fallCounter = 0;
                 }
                 this.verticalMoveCounter -= this.verticalRate;
@@ -177,7 +204,7 @@ class Player {
             this.move(1, 0);
         }
         if (this.sketch.keyCode === 83 || this.sketch.keyCode === 40) {
-            this.move(0, 1);
+            this.softDrop();
         }
         if (this.sketch.keyCode === 88 || this.sketch.keyCode === 38) {
             this.rotate(1);
@@ -185,7 +212,7 @@ class Player {
             this.rotate(-1);
         }
         if (this.sketch.keyCode === 32) {
-            this.drop();
+            this.hardDrop();
             this.place();
         }
         if (this.sketch.keyCode === 67) {
