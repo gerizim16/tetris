@@ -44,6 +44,7 @@ class Player {
     }
 
     hardDrop() {
+        sounds.HARD_DROP.play();
         this.score += (this.yShadow - this.y) * 2;
         this.y = this.yShadow;
         this.place();
@@ -59,6 +60,8 @@ class Player {
     }
 
     cleared(lines) {
+        if (!lines) return;
+        sounds.LINE.play();
         switch (lines) {
             case 1:
                 this.score += 100;
@@ -205,6 +208,9 @@ class Player {
             success = false;
         }
         this.updateShadow();
+        if (success) {
+            sounds.ROTATE.play();
+        }
         return success;
     }
 

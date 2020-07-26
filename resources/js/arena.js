@@ -53,7 +53,7 @@ class Arena {
                 }
             }
         }
-        player.cleared(this.checkClearLines(player.y, player.y + player.rows));
+        this.checkClearLines(player.y, player.y + player.rows);
     }
 
     checkClearLines(min, max) {

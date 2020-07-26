@@ -1,12 +1,15 @@
+let sounds;
+
 function tetrisGame(sketch) {
-    sketch.colors = {
-        BLACK: sketch.color(colors.BLACK),
-        BLUE: sketch.color(colors.BLUE),
-        GREEN: sketch.color(colors.GREEN),
-        YELLOW: sketch.color(colors.YELLOW),
-        ORANGE: sketch.color(colors.ORANGE),
-        RED: sketch.color(colors.RED),
-    }
+
+    sketch.preload = function () {
+        sketch.soundFormats('wav');
+        sounds = {
+            HARD_DROP: sketch.loadSound('resources/sound/fx_hrddp.wav'),
+            LINE: sketch.loadSound('resources/sound/fx_line.wav'),
+            ROTATE: sketch.loadSound('resources/sound/fx_rot.wav'),
+        };
+    };
 
     sketch.setup = function () {
         sketch.createCanvas(700, 800);
