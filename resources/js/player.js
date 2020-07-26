@@ -27,6 +27,7 @@ class Player {
         this.x = 3;
         this.y = 0;
         this.held = false;
+        this.fallCounter = 0;
         this.updateShadow();
     }
 
@@ -93,13 +94,19 @@ class Player {
                 this.verticalMoveCounter -= this.verticalRate;
             }
         }
-
         this.fallCounter += this.sketch.deltaTime;
         if (this.fallCounter >= this.fallRate) {
-            if (!this.move(0, 1)) {
-                this.place();
-            }
+            this.move(0, 1);
             this.fallCounter -= this.fallRate;
+        }
+        if (this.y == this.yShadow) {
+            this.dropCounter += this.sketch.deltaTime;
+            if (this.dropCounter >= this.dropRate) {
+                this.place();
+                this.dropCounter -= this.dropRate;
+            }
+        } else {
+            this.dropCounter = 0;
         }
     }
 
