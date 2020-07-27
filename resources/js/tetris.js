@@ -130,4 +130,8 @@ class Tetris {
     keyPressed() {
         this.player.keyPressed();
     }
+
+    keyReleased() {
+        this.player.keyReleased();
+    }
 }

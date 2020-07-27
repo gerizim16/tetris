@@ -9,8 +9,12 @@ class Player {
         this.horizontalMoveCounter = 0;
         this.verticalRate = fallRate * 0.1;
         this.verticalMoveCounter = 0;
-        this.dropRate = 500;
-        this.dropCounter = 0;
+        this.placeRate = 500;
+        this.placeCounter = 0;
+        this.moveDirection = {
+            x: 0,
+            y: 0,
+        }
         this.score = 0;
         this.shapeNameGenerator = randomShapeName();
         this.next = [];
@@ -20,27 +24,45 @@ class Player {
         this.spawn();
     }
 
-    createShape() {
-        return new Shape(this.shapeNameGenerator.next().value);
+    get rows() {
+        return this.shape.grid.length;
     }
 
-    resetStatus() {
-        this.x = 3;
-        this.y = 0;
-        this.held = false;
-        this.fallCounter = 0;
+    get cols() {
+        return this.shape.grid[0].length;
+    }
+
+    get color() {
+        return this.shape.color;
+    }
+
+    move(x, y) {
+        if (x != null) {
+            this.moveDirection.x = x;
+        }
+        if (y != null) {
+            this.moveDirection.y = y;
+        }
+    }
+
+    rotate(cwAmount) {
+        // TODO: pushback
+        if (this.shape.shapeName === shapeNames.O) return false;
+        cwAmount %= 4;
+        cwAmount += 4;
+        cwAmount %= 4;
+        this.shape.rotate(cwAmount);
+        let success = true;
+        if (this.collides()) {
+            this.shape.rotate(-cwAmount);
+            success = false;
+        }
         this.updateShadow();
-    }
-
-    spawn() {
-        this.shape = this.next.shift();
-        this.next.push(this.createShape());
-        this.resetStatus();
-    }
-
-    place() {
-        this.arena.merge(this);
-        this.spawn();
+        if (success) {
+            sounds.ROTATE.play();
+            this.placeCounter = 0;
+        }
+        return success;
     }
 
     hardDrop() {
@@ -50,13 +72,16 @@ class Player {
         this.place();
     }
 
-    softDrop() {
-        const moved = this.move(0, 1);
-        if (moved) {
-            this.score++;
-            this.fallCounter = 0;
+    hold() {
+        if (!this.held) {
+            [this.shapeHold, this.shape] = [this.shape, this.shapeHold];
+            if (this.shape == null) {
+                this.spawn();
+            }
+            this.shapeHold.resetRotation();
+            this.resetStatus();
+            this.held = true;
         }
-        return moved;
     }
 
     cleared(lines) {
@@ -80,66 +105,44 @@ class Player {
         }
     }
 
-    hold() {
-        if (!this.held) {
-            [this.shapeHold, this.shape] = [this.shape, this.shapeHold];
-            if (this.shape == null) {
-                this.spawn();
-            }
-            this.shapeHold.resetRotation();
-            this.resetStatus();
-            this.held = true;
-        }
-    }
-
-    get rows() {
-        return this.shape.grid.length;
-    }
-
-    get cols() {
-        return this.shape.grid[0].length;
-    }
-
-    get color() {
-        return this.shape.color;
+    spawn() {
+        this.shape = this.next.shift();
+        this.next.push(this.createShape());
+        this.resetStatus();
     }
 
     update() {
-        if (this.sketch.keyIsDown(37)) {
+        if (this.moveDirection.x != 0) {
             this.horizontalMoveCounter += this.sketch.deltaTime;
             if (this.horizontalMoveCounter >= this.horizontalRate) {
-                this.move(-1, 0);
-                this.horizontalMoveCounter -= this.horizontalRate;
-            }
-        } else if (this.sketch.keyIsDown(39)) {
-            this.horizontalMoveCounter += this.sketch.deltaTime;
-            if (this.horizontalMoveCounter >= this.horizontalRate) {
-                this.move(1, 0);
+                this.translate((this.moveDirection.x < 0) ? -1 : 1, 0);
                 this.horizontalMoveCounter -= this.horizontalRate;
             }
         } else {
-            this.horizontalMoveCounter = 0;
+            this.horizontalMoveCounter = this.horizontalRate;
         }
-        if (this.sketch.keyIsDown(40)) {
+        if (this.moveDirection.y > 0) {
             this.verticalMoveCounter += this.sketch.deltaTime;
             if (this.verticalMoveCounter >= this.verticalRate) {
                 this.softDrop();
                 this.verticalMoveCounter -= this.verticalRate;
             }
+        } else {
+            this.verticalMoveCounter = this.verticalRate;
         }
         this.fallCounter += this.sketch.deltaTime;
         if (this.fallCounter >= this.fallRate) {
-            this.move(0, 1);
+            this.translate(0, 1);
             this.fallCounter -= this.fallRate;
         }
         if (this.y == this.yShadow) {
-            this.dropCounter += this.sketch.deltaTime;
-            if (this.dropCounter >= this.dropRate) {
+            this.placeCounter += this.sketch.deltaTime;
+            if (this.placeCounter >= this.placeRate) {
                 this.place();
-                this.dropCounter -= this.dropRate;
+                this.placeCounter -= this.placeRate;
             }
         } else {
-            this.dropCounter = 0;
+            this.placeCounter = 0;
         }
     }
 
@@ -160,6 +163,55 @@ class Player {
         this.shape.drawGrid(this.graphics, this.arena.blockSize, this.x, this.yShadow, colors.SHADOW);
     }
 
+    keyPressed() {
+        let x, y;
+        if (this.sketch.keyCode === 37) {
+            x = -1;
+        } else if (this.sketch.keyCode === 39) {
+            x = 1;
+        }
+        if (this.sketch.keyCode === 40) {
+            y = 1;
+        }
+        this.move(x, y);
+        if (this.sketch.keyCode === 88 || this.sketch.keyCode === 38) {
+            this.rotate(1);
+        } else if (this.sketch.keyCode === 90 || this.sketch.keyCode === 17) {
+            this.rotate(-1);
+        }
+        if (this.sketch.keyCode === 32) {
+            this.hardDrop();
+        }
+        if (this.sketch.keyCode === 67) {
+            this.hold();
+        }
+    }
+
+    keyReleased() {
+        let x, y;
+        if (!this.sketch.keyIsDown(37) && !this.sketch.keyIsDown(39)) {
+            x = 0;
+        }
+        if (this.sketch.keyCode === 40) {
+            y = 0;
+        }
+        this.move(x, y);
+    }
+
+    // HELPER METHODS --
+
+    resetStatus() {
+        this.x = 3;
+        this.y = 0;
+        this.held = false;
+        this.fallCounter = 0;
+        this.updateShadow();
+    }
+
+    createShape() {
+        return new Shape(this.shapeNameGenerator.next().value);
+    }
+
     collides() {
         for (let y = 0; y < this.shape.rows; y++) {
             for (let x = 0; x < this.shape.cols; x++) {
@@ -175,7 +227,21 @@ class Player {
         return this.shape.grid[y][x];
     }
 
-    move(x, y) {
+    place() {
+        this.arena.merge(this);
+        this.spawn();
+    }
+
+    softDrop() {
+        const moved = this.translate(0, 1);
+        if (moved) {
+            this.score++;
+            this.fallCounter = 0;
+        }
+        return moved;
+    }
+
+    translate(x, y) {
         if (y != 0) {
             if (this.y + y <= this.yShadow) {
                 this.y += y;
@@ -194,49 +260,26 @@ class Player {
         }
         return true;
     }
+}
 
-    rotate(cwAmount) {
-        // TODO: pushback
-        if (this.shape.shapeName === shapeNames.O) return false;
-        cwAmount %= 4;
-        cwAmount += 4;
-        cwAmount %= 4;
-        this.shape.rotate(cwAmount);
-        let success = true;
-        if (this.collides()) {
-            this.shape.rotate(-cwAmount);
-            success = false;
-        }
-        this.updateShadow();
-        if (success) {
-            sounds.ROTATE.play();
-        }
-        return success;
+class AIPlayer extends Player {
+    constructor(sketch, graphics, arena, fallrate = 1000) {
+        super(sketch, graphics, arena, fallrate);
+        this.moveQueue = [];
     }
 
-    keyPressed() {
-        if (this.sketch.keyCode === 37) {
-            this.move(-1, 0);
-        } else if (this.sketch.keyCode === 39) {
-            this.move(1, 0);
-        }
-        if (this.sketch.keyCode === 40) {
-            this.softDrop();
-        }
-        if (this.sketch.keyCode === 88 || this.sketch.keyCode === 38) {
-            if (this.rotate(1)) {
-                this.dropCounter = 0;
-            }
-        } else if (this.sketch.keyCode === 90 || this.sketch.keyCode === 17) {
-            if (this.rotate(-1)) {
-                this.dropCounter = 0;
-            }
-        }
-        if (this.sketch.keyCode === 32) {
-            this.hardDrop();
-        }
-        if (this.sketch.keyCode === 67) {
-            this.hold();
-        }
+    spawn() {
+        super.spawn();
+        this.computeMoveQueue();
     }
+
+    // HELPER METHODS --
+
+    computeMoveQueue() {
+    }
+
+    // clear key events
+    keyPressed() { }
+
+    keyReleased() { }
 }
