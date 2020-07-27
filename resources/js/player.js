@@ -72,9 +72,6 @@ class Player {
     rotate(cwAmount) {
         // TODO: pushback
         if (this.shape.name === Shape.NAMES.O) return false;
-        cwAmount %= 4;
-        cwAmount += 4;
-        cwAmount %= 4;
         this.shape.rotate(cwAmount);
         let success = true;
         if (this.collides()) {
@@ -84,6 +81,7 @@ class Player {
         this.updateShadow();
         if (success) {
             sounds.ROTATE.play();
+            this._rotated = cwAmount;
             this.placeCounter = 0;
         }
         return success;
@@ -291,18 +289,9 @@ class Player {
 }
 
 class AIPlayer extends Player {
-    static get MOVES() {
-        return {
-            LEFT: Symbol("left"),
-            RIGHT: Symbol("right"),
-            DOWN: Symbol("down"),
-            ROTATE: Symbol("rotate"),
-        }
-    }
-
     constructor(sketch, graphics, arena, fallrate = 1000) {
         super(sketch, graphics, arena, fallrate);
-        this.moveQueue = [];
+        this.computeMoveQueue();
     }
 
     spawn() {
@@ -312,15 +301,73 @@ class AIPlayer extends Player {
 
     update() {
         super.update();
+        this.executeMoveQueue();
+    }
+
+    computeMoveQueue() {
+        // TODO
+        this.moveQueue = [];
+    }
+
+    executeMoveQueue() {
+        if (!this.moveQueue || !this.moveQueue.length) {
+            this.hardDrop();
+            return;
+        }
+        let moved = this.moved;
+        let rotated = this.rotated;
+        console.log(rotated);
+        if (moved.x || moved.y || rotated) {
+            const moveCounts = {
+                [AIPlayer.MOVES.LEFT]: 0,
+                [AIPlayer.MOVES.RIGHT]: 0,
+                [AIPlayer.MOVES.DOWN]: moved.y,
+                [AIPlayer.MOVES.ROTATE_LEFT]: 0,
+                [AIPlayer.MOVES.ROTATE_RIGHT]: 0,
+            }
+            moveCounts[rotated > 0 ? AIPlayer.MOVES.ROTATE_RIGHT : AIPlayer.MOVES.ROTATE_LEFT] = Math.abs(rotated);
+            moveCounts[moved.x > 0 ? AIPlayer.MOVES.RIGHT : AIPlayer.MOVES.LEFT] = Math.abs(moved.x);
+
+            for (let index = 0; index < this.moveQueue.length; index++) {
+                if (moveCounts[this.moveQueue[index]] > 0) {
+                    --moveCounts[this.moveQueue[index]];
+                    this.moveQueue.splice(index, 1);
+                    index--;
+                }
+            }
+        }
+        const move = this.moveQueue[0];
+        if (move === AIPlayer.MOVES.LEFT) {
+            this.move(-1, null);
+        } else if (move === AIPlayer.MOVES.RIGHT) {
+            this.move(1, null);
+        } else {
+            this.move(0, null);
+        }
+        if (move === AIPlayer.MOVES.DOWN) {
+            this.move(null, 1);
+        } else {
+            this.move(null, 0);
+        }
+        if (move === AIPlayer.MOVES.ROTATE_LEFT) {
+            this.rotate(-1);
+        } else if (move === AIPlayer.MOVES.ROTATE_RIGHT) {
+            this.rotate(1);
+        }
     }
 
     // HELPER METHODS --
 
-    computeMoveQueue() {
-    }
-
     // clear key events
-    keyPressed() { }
+    // keyPressed() { }
 
-    keyReleased() { }
+    // keyReleased() { }
 }
+
+AIPlayer.MOVES = Object.freeze({
+    LEFT: Symbol("left"),
+    RIGHT: Symbol("right"),
+    DOWN: Symbol("down"),
+    ROTATE_RIGHT: Symbol("rotate_right"),
+    ROTATE_LEFT: Symbol("rotate_left"),
+});

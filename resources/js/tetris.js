@@ -5,7 +5,7 @@ class Tetris {
         this.sketch = sketch;
         this.playArea = sketch.createGraphics(350, 700);
         this.arena = new Arena(10, 20, this.playArea, this);
-        this.player = new Player(sketch, this.playArea, this.arena);
+        this.player = new AIPlayer(sketch, this.playArea, this.arena);
         this._level = 1;
         this._levelGoal = 10;
         this.lines = 0;
