@@ -71,7 +71,7 @@ class Player {
 
     rotate(cwAmount) {
         // TODO: pushback
-        if (this.shape.shapeName === shapeNames.O) return false;
+        if (this.shape.name === Shape.NAMES.O) return false;
         cwAmount %= 4;
         cwAmount += 4;
         cwAmount %= 4;

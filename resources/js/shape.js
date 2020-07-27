@@ -1,35 +1,24 @@
-const shapeNames = Object.freeze({
-    L: Symbol("l"),
-    J: Symbol("j"),
-    T: Symbol("t"),
-    S: Symbol("s"),
-    Z: Symbol("z"),
-    O: Symbol("o"),
-    I: Symbol("i"),
-});
-
 function* randomShapeName() {
     let bag = [];
     while (true) {
         if (bag.length === 0) {
-            bag = Object.values(shapeNames);
+            bag = Object.values(Shape.NAMES);
             bag = shuffle(bag);
         }
         yield bag.pop();
     }
 }
 
-// TODO: orientation status, reset
 class Shape {
-    constructor(shapeName) {
-        this.shapeName = shapeName;
+    constructor(name) {
+        this.name = name;
         this.orientation = 0;
-        if (shapeName == null) {
-            shapeName = Shape.getRandomShapeName();
+        if (name == null) {
+            name = Shape.getRandomShapeName();
         }
 
-        switch (shapeName) {
-            case shapeNames.L:
+        switch (name) {
+            case Shape.NAMES.L:
                 this.grid = [
                     [false, false, true],
                     [true, true, true],
@@ -37,7 +26,7 @@ class Shape {
                 ];
                 this.color = colors.ORANGE;
                 break;
-            case shapeNames.J:
+            case Shape.NAMES.J:
                 this.grid = [
                     [true, false, false],
                     [true, true, true],
@@ -46,7 +35,7 @@ class Shape {
                 this.color = colors.BLUE;
                 break;
 
-            case shapeNames.T:
+            case Shape.NAMES.T:
                 this.grid = [
                     [false, true, false],
                     [true, true, true],
@@ -55,7 +44,7 @@ class Shape {
                 this.color = colors.MAGENTA;
                 break;
 
-            case shapeNames.S:
+            case Shape.NAMES.S:
                 this.grid = [
                     [false, true, true],
                     [true, true, false],
@@ -64,7 +53,7 @@ class Shape {
                 this.color = colors.GREEN;
                 break;
 
-            case shapeNames.Z:
+            case Shape.NAMES.Z:
                 this.grid = [
                     [true, true, false],
                     [false, true, true],
@@ -73,7 +62,7 @@ class Shape {
                 this.color = colors.RED;
                 break;
 
-            case shapeNames.O:
+            case Shape.NAMES.O:
                 this.grid = [
                     [false, true, true],
                     [false, true, true],
@@ -82,7 +71,7 @@ class Shape {
                 this.color = colors.YELLOW;
                 break;
 
-            case shapeNames.I:
+            case Shape.NAMES.I:
                 this.grid = [
                     [false, false, false, false],
                     [true, true, true, true],
@@ -93,16 +82,16 @@ class Shape {
                 break;
 
             default:
-                throw ('Unable to construct shape: ' + shapeName);
+                throw ('Unable to construct shape: ' + name);
         }
     }
 
     static getRandomShapeName() {
-        return shapeNames[Object.keys(shapeNames)[Math.floor(Math.random() * Object.keys(shapeNames).length)]];
+        return Shape.NAMES[Object.keys(Shape.NAMES)[Math.floor(Math.random() * Object.keys(Shape.NAMES).length)]];
     }
 
     rotate(cwAmount) {
-        if (this.shapeName === shapeNames.O) return;
+        if (this.name === Shape.NAMES.O) return;
         cwAmount %= 4;
         cwAmount += 4;
         cwAmount %= 4;
@@ -122,6 +111,10 @@ class Shape {
             default:
                 break;
         }
+    }
+
+    setOrientation(orientation) {
+        this.rotate(orientation - this.orientation);
     }
 
     resetRotation() {
@@ -162,3 +155,13 @@ class Shape {
         return this.grid[y][x];
     }
 }
+
+Shape.NAMES = Object.freeze({
+    L: Symbol("l"),
+    J: Symbol("j"),
+    T: Symbol("t"),
+    S: Symbol("s"),
+    Z: Symbol("z"),
+    O: Symbol("o"),
+    I: Symbol("i"),
+});
