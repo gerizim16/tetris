@@ -3,7 +3,6 @@ class Tetris {
         this.x = x;
         this.y = y;
         this.sketch = sketch;
-        // this.sounds = sounds;
         this.playArea = sketch.createGraphics(350, 700);
         this.arena = new Arena(10, 20, this.playArea, this);
         this.player = new Player(sketch, this.playArea, this.arena);

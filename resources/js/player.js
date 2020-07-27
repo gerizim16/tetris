@@ -81,7 +81,9 @@ class Player {
             this.shapeHold.resetRotation();
             this.resetStatus();
             this.held = true;
+            return true
         }
+        return false;
     }
 
     cleared(lines) {
