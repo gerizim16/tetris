@@ -296,6 +296,7 @@ class AIPlayer extends Player {
             LEFT: Symbol("left"),
             RIGHT: Symbol("right"),
             DOWN: Symbol("down"),
+            ROTATE: Symbol("rotate"),
         }
     }
 
@@ -307,6 +308,10 @@ class AIPlayer extends Player {
     spawn() {
         super.spawn();
         this.computeMoveQueue();
+    }
+
+    update() {
+        super.update();
     }
 
     // HELPER METHODS --
