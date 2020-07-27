@@ -14,7 +14,12 @@ class Player {
         this.moveDirection = {
             x: 0,
             y: 0,
-        }
+        };
+        this._moved = {
+            x: 0,
+            y: 0,
+        };
+        this._rotated = 0;
         this.score = 0;
         this.shapeNameGenerator = randomShapeName();
         this.next = [];
@@ -34,6 +39,25 @@ class Player {
 
     get color() {
         return this.shape.color;
+    }
+
+    get moved() {
+        const moved = Object.assign({}, this._moved);
+        this._moved = {
+            x: 0,
+            y: 0,
+        };
+        return moved;
+    }
+
+    get rotated() {
+        const rotated = this._rotated;
+        this._rotated = 0;
+        return rotated;
+    }
+
+    get orientation() {
+        return this.shape.orientation;
     }
 
     move(x, y) {
@@ -247,6 +271,7 @@ class Player {
         if (y != 0) {
             if (this.y + y <= this.yShadow) {
                 this.y += y;
+                this._moved.y += y;
             } else {
                 return false;
             }
@@ -258,6 +283,7 @@ class Player {
                 this.x = pastX;
                 return false;
             }
+            this._moved.x += x;
             this.updateShadow();
         }
         return true;
@@ -265,6 +291,14 @@ class Player {
 }
 
 class AIPlayer extends Player {
+    static get MOVES() {
+        return {
+            LEFT: Symbol("left"),
+            RIGHT: Symbol("right"),
+            DOWN: Symbol("down"),
+        }
+    }
+
     constructor(sketch, graphics, arena, fallrate = 1000) {
         super(sketch, graphics, arena, fallrate);
         this.moveQueue = [];
