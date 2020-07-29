@@ -3,7 +3,7 @@ class Player {
         this.sketch = sketch;
         this.graphics = graphics;
         this.arena = arena;
-        this.fallRate = fallRate;
+        this._fallRate = fallRate;
         this.fallCounter = 0;
         this.horizontalRate = 120;
         this.horizontalMoveCounter = 0;
@@ -60,6 +60,11 @@ class Player {
 
     get orientation() {
         return this.shape.orientation;
+    }
+
+    set fallrate(fallrate) {
+        this._fallRate = fallrate;
+        this.verticalRate = 0.1 * fallrate;
     }
 
     move(x, y) {
@@ -159,9 +164,9 @@ class Player {
             this.verticalMoveCounter = this.verticalRate;
         }
         this.fallCounter += this.sketch.deltaTime;
-        if (this.fallCounter >= this.fallRate) {
+        if (this.fallCounter >= this._fallRate) {
             this.translate(0, 1);
-            this.fallCounter -= this.fallRate;
+            this.fallCounter -= this._fallRate;
         }
         if (this.y == this.yShadow) {
             this.placeCounter += this.sketch.deltaTime;
@@ -336,6 +341,7 @@ class AIPlayer extends Player {
 
     update() {
         super.update();
+        this.removeMadeMoves();
         this.executeMoveQueue();
     }
 
@@ -370,7 +376,7 @@ class AIPlayer extends Player {
         }
         this.shape.resetRotation();
 
-        // choose placeGoal
+        // sort and choose placeGoal
         this.placeCandidates.sort((a, b) => {
             if (a.holes === b.holes) {
                 return b.y - a.y;
@@ -380,58 +386,55 @@ class AIPlayer extends Player {
         const placeGoal = this.placeCandidates[0];
 
         // build moveQueue using placeGoal
-        let xPos = placeGoal.xPos;
-        let yPos = placeGoal.yPos;
-        let orientation = placeGoal.orientation;
-        // eliminate trailing down-moves
-        while (this.coordMove[orientation][yPos][xPos].has(AIPlayer.MOVES.DOWN)) {
-            yPos--;
+        if (!this.backtrackBuildMoveQueue(placeGoal.xPos, placeGoal.yPos, placeGoal.orientation)) {
+            console.log('move queue build failed', this.shape.name);
         }
-        while (xPos != this.xPos || yPos != this.yPos || orientation != this.orientation) {
-            let priorities;
-            if (xPos == this.xPos && yPos == this.yPos) {
-                priorities = [AIPlayer.MOVES.ROTATE_RIGHT];
-            } else if (xPos < this.xPos) {
-                priorities = [AIPlayer.MOVES.DOWN, AIPlayer.MOVES.LEFT, AIPlayer.MOVES.RIGHT, AIPlayer.MOVES.ROTATE_RIGHT];
-            } else {
-                priorities = [AIPlayer.MOVES.DOWN, AIPlayer.MOVES.RIGHT, AIPlayer.MOVES.LEFT, AIPlayer.MOVES.ROTATE_RIGHT];
-            }
-            let madeMove = false;
-            for (const move of priorities) {
-                if (this.coordMove[orientation][yPos][xPos].has(move)) {
-                    this.moveQueue.push(move);
-                    if (move != AIPlayer.MOVES.ROTATE_RIGHT) {
-                        xPos -= move[0];
-                        yPos -= move[1];
-                    } else {
-                        orientation += 3;
-                        orientation %= 4;
-                    }
-                    madeMove = true;
-                    break;
-                }
-            }
-            if (!madeMove) {
-                console.log('move stuck');
-                this.sketch.noLoop();
-            }
-            console.log(this.shape.name, madeMove, xPos, yPos, orientation);
-        }
+        this.moveQueue.reverse();
 
         this.moved;
         this.rotated;
-        console.log(this.shape.name);
+        // console.log(this.shape.name);
         // console.table(this.coordMove);
-        console.log('moveQ', this.moveQueue);
-        console.log(this.placeCandidates);
+        // console.log('moveQ', this.moveQueue);
+        // console.log(placeGoal);
+    }
+
+    backtrackBuildMoveQueue(xPos, yPos, orientation) {
+        // console.log(xPos, yPos, orientation);
+        // base case
+        if (xPos == this.xPos && yPos == this.yPos && orientation == this.orientation) {
+            return true;
+        }
+
+        let priorities = [AIPlayer.MOVES.DOWN, AIPlayer.MOVES.RIGHT, AIPlayer.MOVES.ROTATE_RIGHT, AIPlayer.MOVES.LEFT];
+        if (xPos < this.xPos) {
+            // swap
+            [priorities[1], priorities[3]] = [priorities[3], priorities[1]];
+        }
+        if (this.coordMove[orientation][yPos][xPos].visited) return false;
+        for (const move of priorities) {
+            if (this.coordMove[orientation][yPos][xPos].has(move)) {
+                this.coordMove[orientation][yPos][xPos].visited = true;
+                // recursive call
+                let success;
+                if (move != AIPlayer.MOVES.ROTATE_RIGHT) {
+                    success = this.backtrackBuildMoveQueue(xPos - move[0], yPos - move[1], orientation);
+                } else {
+                    success = this.backtrackBuildMoveQueue(xPos, yPos, (orientation - move + 4) % 4);
+                }
+                if (success) {
+                    this.moveQueue.push(move);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     backtrackCoordMove() {
         // console.log(this.orientation, this.xPos, this.yPos);
-        for (const move of [AIPlayer.MOVES.DOWN,
-        AIPlayer.MOVES.LEFT,
-        AIPlayer.MOVES.RIGHT,
-        AIPlayer.MOVES.ROTATE_RIGHT]) {
+        for (const move of [AIPlayer.MOVES.DOWN, AIPlayer.MOVES.LEFT,
+        AIPlayer.MOVES.RIGHT, AIPlayer.MOVES.ROTATE_RIGHT]) {
             // do move
             const success = (move != AIPlayer.MOVES.ROTATE_RIGHT) ?
                 this.testTranslate(...move) :
@@ -467,10 +470,28 @@ class AIPlayer extends Player {
     }
 
     executeMoveQueue() {
-        if (!this.moveQueue || !this.moveQueue.length) {
+        if (!this.moveQueue ||
+            !this.moveQueue.length ||
+            this.moveQueue.every(move => move === AIPlayer.MOVES.DOWN)) {
             this.hardDrop();
             return;
         }
+
+        const move = this.moveQueue[this.moveQueue.length - 1];
+        if (move === AIPlayer.MOVES.LEFT ||
+            move === AIPlayer.MOVES.RIGHT ||
+            move === AIPlayer.MOVES.DOWN) {
+            this.move(...move);
+        } else {
+            this.move(0, 0);
+        }
+        if (move === AIPlayer.MOVES.ROTATE_LEFT || move === AIPlayer.MOVES.ROTATE_RIGHT) {
+            this.rotate(move);
+        }
+    }
+
+    removeMadeMoves() {
+        if (!this.moveQueue) return;
         let moved = this.moved;
         let rotated = this.rotated;
         if (moved.x || moved.y || rotated) {
@@ -490,17 +511,6 @@ class AIPlayer extends Player {
                     this.moveQueue.splice(index, 1);
                 }
             }
-        }
-        const move = this.moveQueue[this.moveQueue.length - 1];
-        if (move === AIPlayer.MOVES.LEFT ||
-            move === AIPlayer.MOVES.RIGHT ||
-            move === AIPlayer.MOVES.DOWN) {
-            this.move(...move);
-        } else {
-            this.move(0, 0);
-        }
-        if (move === AIPlayer.MOVES.ROTATE_LEFT || move === AIPlayer.MOVES.ROTATE_RIGHT) {
-            this.rotate(move);
         }
     }
 
