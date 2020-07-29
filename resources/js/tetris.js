@@ -1,11 +1,15 @@
 class Tetris {
-    constructor(x, y, sketch) {
+    constructor(x, y, sketch, ai = false) {
         this.x = x;
         this.y = y;
         this.sketch = sketch;
         this.playArea = sketch.createGraphics(350, 700);
         this.arena = new Arena(10, 20, this.playArea, this);
-        this.player = new AIPlayer(sketch, this.playArea, this.arena);
+        if (ai) {
+            this.player = new AIPlayer(sketch, this.playArea, this.arena);
+        } else {
+            this.player = new Player(sketch, this.playArea, this.arena);
+        }
         this._level = 1;
         this._levelGoal = 10;
         this.lines = 0;
@@ -16,6 +20,7 @@ class Tetris {
     }
 
     set level(value) {
+        if (value > 10) value = 10;
         this._level = value;
         this.fallRate = ((0.8 - ((this._level - 1) * 0.007)) ** (this._level - 1)) * 1000;
         this.player.fallRate = this.fallRate;

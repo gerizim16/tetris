@@ -371,6 +371,11 @@ class AIPlayer extends Player {
         });
         let placeGoal = this.placeCandidates[0];
 
+        // build moveQueue using placeGoal
+        if (!this.backtrackBuildMoveQueue(placeGoal.xPos, placeGoal.yPos, placeGoal.orientation)) {
+            console.log('move queue build failed', this.shape.name);
+        }
+
         // if (placeGoal.holes != 0) {
         // console.log('checking');
         // check held piece if score is better
@@ -378,12 +383,27 @@ class AIPlayer extends Player {
         candidate.moveQueue = [...this.moveQueue];
         candidate.placeGoal = { ...placeGoal };
         this.swapHeldShape();
+        
+        this.moveQueue = [];
+        this.placeCandidates = [];
+        for (let o = 0; o < this.coordMove.length; o++) {
+            for (let y = 0; y < this.arena.rows + 2; y++) {
+                for (let x = 0; x < this.arena.cols + 2; x++) {
+                    this.coordMove[o][y][x] = new Set();
+                }
+            }
+        }
         this.backtrackCoordMove();
         this.calculateCandidateScores();
         this.placeCandidates.reverse().sort((a, b) => {
             return b.score - a.score;
         });
         placeGoal = this.placeCandidates[0];
+        // build moveQueue using placeGoal
+        if (!this.backtrackBuildMoveQueue(placeGoal.xPos, placeGoal.yPos, placeGoal.orientation)) {
+            console.log('move queue build failed', this.shape.name);
+        }
+
         this.swapHeldShape();
 
         if (placeGoal.score <= candidate.placeGoal.score) {
@@ -392,21 +412,19 @@ class AIPlayer extends Player {
             // console.log('stayed');
         } else {
             this.hold();
+            // this.sketch.noLoop();
+            // console.log(placeGoal.holes);
             // console.log('swapped');
         }
         // }
 
-        // build moveQueue using placeGoal
-        if (!this.backtrackBuildMoveQueue(placeGoal.xPos, placeGoal.yPos, placeGoal.orientation)) {
-            console.log('move queue build failed', this.shape.name);
-        }
         this.moveQueue.reverse();
 
         this.moved;
         this.rotated;
-        console.log(this.shape.name);
+        // console.log(this.shape.name);
         // console.table(this.coordMove);
-        console.log('moveQ', JSON.stringify(this.moveQueue));
+        // console.log('moveQ', JSON.stringify(this.moveQueue));
         // console.log(placeGoal);
     }
 
@@ -426,7 +444,7 @@ class AIPlayer extends Player {
                 }
             }
             // calculate final score
-            candidate.score = candidate.y - candidate.holes * 4;
+            candidate.score = candidate.y - candidate.holes * 3;
         }
         this.shape.resetRotation();
     }
@@ -437,16 +455,23 @@ class AIPlayer extends Player {
         if (xPos == this.xPos && yPos == this.yPos && orientation == this.orientation) {
             return true;
         }
+        if (this.coordMove[orientation][yPos][xPos].visited) return false;
+        this.coordMove[orientation][yPos][xPos].visited = true;
 
-        let priorities = [AIPlayer.MOVES.DOWN, AIPlayer.MOVES.RIGHT, AIPlayer.MOVES.ROTATE_RIGHT, AIPlayer.MOVES.LEFT];
-        if (xPos < this.xPos) {
+        let priorities = [
+            AIPlayer.MOVES.DOWN,
+            AIPlayer.MOVES.LEFT,
+            AIPlayer.MOVES.ROTATE_RIGHT,
+            AIPlayer.MOVES.RIGHT,
+        ];
+        if (xPos > this.xPos) {
             // swap
             [priorities[1], priorities[3]] = [priorities[3], priorities[1]];
+        } else if (xPos == this.xPos) {
+            [priorities[1], priorities[2]] = [priorities[2], priorities[1]];
         }
-        if (this.coordMove[orientation][yPos][xPos].visited) return false;
         for (const move of priorities) {
             if (this.coordMove[orientation][yPos][xPos].has(move)) {
-                this.coordMove[orientation][yPos][xPos].visited = true;
                 // recursive call
                 let success;
                 if (move != AIPlayer.MOVES.ROTATE_RIGHT) {
@@ -464,7 +489,7 @@ class AIPlayer extends Player {
     }
 
     backtrackCoordMove() {
-        // console.log(this.orientation, this.xPos, this.yPos);
+        // console.log(this.orientation, this.xPos, this.yPos, this.shape.name);
         for (const move of [AIPlayer.MOVES.DOWN, AIPlayer.MOVES.LEFT,
         AIPlayer.MOVES.RIGHT, AIPlayer.MOVES.ROTATE_RIGHT]) {
             // do move
@@ -569,9 +594,9 @@ class AIPlayer extends Player {
     }
 
     // clear key events
-    // keyPressed() { }
+    keyPressed() { }
 
-    // keyReleased() { }
+    keyReleased() { }
 }
 
 AIPlayer.MOVES = Object.freeze({

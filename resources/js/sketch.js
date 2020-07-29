@@ -1,7 +1,7 @@
 let sounds;
+let ai = confirm('Let an AI play?\n(press cancel to play it yourself!)');
 
 function tetrisGame(sketch) {
-
     sketch.preload = function () {
         sketch.soundFormats('wav');
         sounds = {
@@ -13,7 +13,7 @@ function tetrisGame(sketch) {
 
     sketch.setup = function () {
         sketch.createCanvas(700, 800);
-        sketch.tetris = new Tetris(0, 0, sketch);
+        sketch.tetris = new Tetris(0, 0, sketch, ai);
     };
 
     sketch.draw = function () {
