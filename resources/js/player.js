@@ -62,9 +62,9 @@ class Player {
         return this.shape.orientation;
     }
 
-    set fallrate(fallrate) {
-        this._fallRate = fallrate;
-        this.verticalRate = 0.1 * fallrate;
+    set fallRate(value) {
+        this._fallRate = value;
+        this.verticalRate = 0.1 * value;
     }
 
     move(x, y) {
@@ -103,16 +103,20 @@ class Player {
 
     hold() {
         if (!this.held) {
-            [this.shapeHold, this.shape] = [this.shape, this.shapeHold];
-            if (this.shape == null) {
-                this.spawn();
-            }
-            this.shapeHold.resetRotation();
-            this.resetStatus();
+            this.swapHeldShape();
             this.held = true;
             return true
         }
         return false;
+    }
+
+    swapHeldShape() {
+        [this.shapeHold, this.shape] = [this.shape, this.shapeHold];
+        if (this.shape == null) {
+            this.spawn();
+        }
+        this.shapeHold.resetRotation();
+        this.resetStatus();
     }
 
     cleared(lines) {
@@ -346,7 +350,6 @@ class AIPlayer extends Player {
     }
 
     computeMoveQueue() {
-        // reset
         this.moveQueue = [];
         this.placeCandidates = [];
         for (let o = 0; o < this.coordMove.length; o++) {
@@ -356,11 +359,60 @@ class AIPlayer extends Player {
                 }
             }
         }
-        // compute moves
+
+        // build valid moves
         this.backtrackCoordMove();
 
-        // calculate scores
+        this.calculateCandidateScores();
+
+        // sort and choose placeGoal
+        this.placeCandidates.reverse().sort((a, b) => {
+            return b.score - a.score;
+        });
+        let placeGoal = this.placeCandidates[0];
+
+        // if (placeGoal.holes != 0) {
+        // console.log('checking');
+        // check held piece if score is better
+        let candidate = {};
+        candidate.moveQueue = [...this.moveQueue];
+        candidate.placeGoal = { ...placeGoal };
+        this.swapHeldShape();
+        this.backtrackCoordMove();
+        this.calculateCandidateScores();
+        this.placeCandidates.reverse().sort((a, b) => {
+            return b.score - a.score;
+        });
+        placeGoal = this.placeCandidates[0];
+        this.swapHeldShape();
+
+        if (placeGoal.score <= candidate.placeGoal.score) {
+            placeGoal = candidate.placeGoal;
+            this.moveQueue = candidate.moveQueue;
+            // console.log('stayed');
+        } else {
+            this.hold();
+            // console.log('swapped');
+        }
+        // }
+
+        // build moveQueue using placeGoal
+        if (!this.backtrackBuildMoveQueue(placeGoal.xPos, placeGoal.yPos, placeGoal.orientation)) {
+            console.log('move queue build failed', this.shape.name);
+        }
+        this.moveQueue.reverse();
+
+        this.moved;
+        this.rotated;
+        console.log(this.shape.name);
+        // console.table(this.coordMove);
+        console.log('moveQ', JSON.stringify(this.moveQueue));
+        // console.log(placeGoal);
+    }
+
+    calculateCandidateScores() {
         for (const candidate of this.placeCandidates) {
+            // calculate holes
             this.shape.setOrientation(candidate.orientation);
             const bottoms = this.shapeBottoms;
             candidate.holes = 0;
@@ -373,30 +425,10 @@ class AIPlayer extends Player {
                     candidate.holes++;
                 }
             }
+            // calculate final score
+            candidate.score = candidate.y - candidate.holes * 4;
         }
         this.shape.resetRotation();
-
-        // sort and choose placeGoal
-        this.placeCandidates.sort((a, b) => {
-            if (a.holes === b.holes) {
-                return b.y - a.y;
-            }
-            return a.holes - b.holes;
-        });
-        const placeGoal = this.placeCandidates[0];
-
-        // build moveQueue using placeGoal
-        if (!this.backtrackBuildMoveQueue(placeGoal.xPos, placeGoal.yPos, placeGoal.orientation)) {
-            console.log('move queue build failed', this.shape.name);
-        }
-        this.moveQueue.reverse();
-
-        this.moved;
-        this.rotated;
-        // console.log(this.shape.name);
-        // console.table(this.coordMove);
-        // console.log('moveQ', this.moveQueue);
-        // console.log(placeGoal);
     }
 
     backtrackBuildMoveQueue(xPos, yPos, orientation) {
